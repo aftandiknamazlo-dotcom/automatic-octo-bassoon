@@ -1,0 +1,170 @@
+/* =============================================
+   DEPOSIT MODAL — Crypto Payment Screen
+   ============================================= */
+
+.deposit-content {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 4px 0;
+}
+
+/* ---- Info Banner ---- */
+.deposit-info-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px;
+  background: linear-gradient(135deg,
+    rgba(108, 92, 231, 0.1) 0%,
+    rgba(108, 92, 231, 0.04) 100%
+  );
+  border: 1px solid rgba(108, 92, 231, 0.18);
+  border-radius: 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.deposit-info-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(108,92,231,0.5), transparent);
+}
+
+.info-icon {
+  color: #a855f7;
+  filter: drop-shadow(0 0 8px rgba(168,85,247,0.4));
+  flex-shrink: 0;
+}
+
+.info-text h4 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--text-primary);
+  letter-spacing: -0.3px;
+}
+
+.info-text p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* ---- Section Label ---- */
+.fast-deposit {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fast-deposit-title {
+  font-size: 9px;
+  font-weight: 900;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 0 2px;
+}
+
+/* ---- Payment Options Grid ---- */
+.deposit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.deposit-option-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 18px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.deposit-option-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.deposit-option-btn:hover:not(:disabled) {
+  background: rgba(108,92,231,0.1);
+  border-color: rgba(108,92,231,0.3);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(108,92,231,0.2);
+}
+
+.deposit-option-btn:hover:not(:disabled)::before {
+  opacity: 1;
+}
+
+.deposit-option-btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.97);
+}
+
+.deposit-option-btn:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+.deposit-icon {
+  color: #a855f7;
+  filter: drop-shadow(0 0 6px rgba(168,85,247,0.4));
+}
+
+/* Amount badge on each option */
+.deposit-option-label {
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--text-primary);
+}
+
+.deposit-option-sub {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* ---- Security Badge ---- */
+.secure-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px;
+  background: rgba(52,199,89,0.05);
+  border: 1px solid rgba(52,199,89,0.12);
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent-green);
+  letter-spacing: 0.3px;
+}
+
+/* Spinner */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}

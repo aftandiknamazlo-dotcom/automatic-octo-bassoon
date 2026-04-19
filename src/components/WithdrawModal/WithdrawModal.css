@@ -1,0 +1,324 @@
+/* =============================================
+   WITHDRAW MODAL — Premium Withdrawal Screen
+   ============================================= */
+
+.withdraw-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 2, 6, 0.85);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2200;
+  padding: 16px;
+}
+
+/* ---- Modal Card ---- */
+.withdraw-modal {
+  background: linear-gradient(175deg,
+    rgba(16, 16, 26, 0.98) 0%,
+    rgba(8, 8, 14, 0.99) 100%
+  );
+  border: 1px solid rgba(241, 196, 15, 0.15);
+  border-radius: 28px;
+  width: 100%;
+  max-width: 420px;
+  overflow: hidden;
+  box-shadow:
+    0 40px 100px rgba(0,0,0,0.85),
+    inset 0 1px 0 rgba(255,255,255,0.05);
+  position: relative;
+}
+
+/* Gold shimmer top edge */
+.withdraw-modal::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 12%; right: 12%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(241,196,15,0.5), transparent);
+}
+
+/* ---- Header ---- */
+.withdraw-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 22px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.withdraw-modal__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--text-primary);
+  letter-spacing: -0.3px;
+}
+
+.withdraw-modal__close {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.withdraw-modal__close:hover {
+  background: rgba(255,59,48,0.12);
+  border-color: rgba(255,59,48,0.2);
+  color: #ff3b30;
+}
+
+/* ---- Form ---- */
+.withdraw-modal__form {
+  padding: 20px 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Balance Display */
+.withdraw-modal__balance {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  background: linear-gradient(135deg,
+    rgba(52,199,89,0.08) 0%,
+    rgba(52,199,89,0.03) 100%
+  );
+  border: 1px solid rgba(52,199,89,0.15);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.withdraw-modal__balance::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 15%; right: 15%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(52,199,89,0.4), transparent);
+}
+
+.withdraw-modal__balance span {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.withdraw-modal__balance strong {
+  font-size: 22px;
+  font-weight: 950;
+  color: var(--accent-green);
+  font-family: var(--font-mono);
+  letter-spacing: -0.5px;
+}
+
+/* Field */
+.withdraw-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.withdraw-modal__field label {
+  font-size: 9px;
+  font-weight: 900;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 0 2px;
+}
+
+.withdraw-input-group {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.withdraw-modal__input {
+  flex: 1;
+  min-width: 0; /* Allows input to shrink below its content */
+  padding: 14px 16px;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  color: var(--text-primary);
+  font-size: 18px; /* Slightly reduced */
+  font-family: var(--font-mono);
+  font-weight: 700;
+  outline: none;
+  transition: all 0.18s ease;
+}
+
+.withdraw-modal__input:focus {
+  border-color: rgba(241,196,15,0.3);
+  background: rgba(0,0,0,0.45);
+  box-shadow: 0 0 0 3px rgba(241,196,15,0.06);
+}
+
+.withdraw-modal__input::placeholder {
+  color: rgba(255,255,255,0.15);
+}
+
+/* Hide number spinners */
+.withdraw-modal__input::-webkit-outer-spin-button,
+.withdraw-modal__input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.withdraw-modal__input[type=number] { -moz-appearance: textfield; }
+
+.max-btn {
+  padding: 0 14px; /* Reduced padding */
+  background: rgba(241,196,15,0.1);
+  border: 1px solid rgba(241,196,15,0.2);
+  border-radius: 14px;
+  color: var(--text-gold);
+  font-weight: 900;
+  font-size: 10px; /* Reduced font size */
+  cursor: pointer;
+  transition: all 0.18s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  flex-shrink: 0; /* Prevents button from being crushed */
+}
+
+.max-btn:hover {
+  background: rgba(241,196,15,0.2);
+  border-color: rgba(241,196,15,0.4);
+  transform: scale(1.04);
+}
+
+/* Info note */
+.withdraw-modal-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.withdraw-modal-info svg {
+  flex-shrink: 0;
+  color: rgba(241,196,15,0.6);
+  margin-top: 1px;
+}
+
+/* Error */
+.withdraw-modal__error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 16px;
+  background: rgba(255,59,48,0.08);
+  border: 1px solid rgba(255,59,48,0.18);
+  border-radius: 14px;
+  color: #ff3b30;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Submit Button */
+.withdraw-modal__submit {
+  width: 100%;
+  height: 56px;
+  background: linear-gradient(135deg, #6c5ce7 0%, #a855f7 100%);
+  border: none;
+  border-radius: 16px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(108,92,231,0.3);
+}
+
+.withdraw-modal__submit::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.14) 0%, transparent 60%);
+}
+
+.withdraw-modal__submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 36px rgba(108,92,231,0.45);
+  filter: brightness(1.1);
+}
+
+.withdraw-modal__submit:active:not(:disabled) {
+  transform: translateY(0) scale(0.97);
+}
+
+.withdraw-modal__submit:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ---- Success State ---- */
+.withdraw-modal__success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 24px;
+  text-align: center;
+  gap: 16px;
+}
+
+.withdraw-modal__success p {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.withdraw-modal__success span {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  max-width: 260px;
+}
+
+/* Mobile — slide from bottom */
+@media (max-width: 480px) {
+  .withdraw-modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .withdraw-modal {
+    border-radius: 28px 28px 0 0;
+    max-height: 90vh;
+  }
+
+  .withdraw-modal::before { display: none; }
+}

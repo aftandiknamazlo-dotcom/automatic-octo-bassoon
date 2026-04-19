@@ -1,0 +1,209 @@
+/* =============================================
+   PLAYERS LIST — Premium v2
+   ============================================= */
+
+.players-list-pro {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px 10px 20px;
+}
+
+/* ---- Section Header ---- */
+.list-header-pro {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 6px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  margin-bottom: 8px;
+}
+
+.title-group-pro {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.title-pro {
+  font-size: 9px;
+  font-weight: 900;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.6;
+}
+
+.list-count-pro {
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--accent-primary);
+}
+
+.bank-display-pro {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+}
+
+.bank-label-pro {
+  font-size: 8px;
+  font-weight: 950;
+  color: var(--accent-primary);
+  letter-spacing: 1.5px;
+  margin-bottom: -2px;
+}
+
+.bank-val-pro {
+  font-size: 18px;
+  font-weight: 950;
+  color: #fff;
+  font-family: var(--font-mono);
+}
+
+.bank-val-pro small {
+  font-size: 10px;
+  opacity: 0.6;
+}
+
+/* ---- Players Grid ---- */
+.players-grid-pro {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ---- Player Card ---- */
+.player-card-pro {
+  background: rgba(14, 14, 22, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 11px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+/* Colored left accent per player */
+.player-card-pro::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10%;
+  bottom: 10%;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--player-color, rgba(255,255,255,0.1));
+  opacity: 0.8;
+}
+
+.player-card-pro.is-me {
+  background: rgba(241, 196, 15, 0.04);
+  border-color: rgba(241, 196, 15, 0.16);
+}
+
+/* ---- Avatar ---- */
+.p-avatar-wrap-pro {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.p-avatar-pro {
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1.5px solid var(--player-color, rgba(255,255,255,0.1));
+}
+
+.p-chance-badge-pro {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0a0a12;
+  color: #fff;
+  font-size: 8px;
+  font-weight: 950;
+  padding: 2px 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  z-index: 2;
+  /* Sync background with player color to make it pop like in the screenshot */
+  background: var(--player-color);
+}
+
+/* ---- Info Block ---- */
+.p-info-pro {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.p-name-pro {
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.p-sub-detail-pro {
+  font-size: 9px;
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+}
+
+/* ---- Bet Value ---- */
+.p-val-wrap-pro {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+.p-amount-pro {
+  font-size: 15px;
+  font-weight: 900;
+  color: #ffffff;
+  font-family: var(--font-mono);
+  letter-spacing: -0.03em;
+}
+
+.p-unit-pro {
+  font-size: 8px;
+  color: var(--text-muted);
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+/* ---- Empty State ---- */
+.empty-state-pro {
+  padding: 36px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  opacity: 0.5;
+}
+
+.empty-title-pro {
+  font-size: 10px;
+  font-weight: 900;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+}

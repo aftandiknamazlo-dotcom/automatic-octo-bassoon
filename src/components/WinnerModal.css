@@ -1,0 +1,262 @@
+/* =============================================
+   WINNER MODAL — Full-screen Celebration
+   ============================================= */
+
+.winner-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2500;
+  background: rgba(2, 2, 6, 0.92);
+  backdrop-filter: blur(32px) saturate(1.8);
+  -webkit-backdrop-filter: blur(32px) saturate(1.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow: hidden;
+}
+
+/* Rotating colored glow behind card */
+.winner-spotlight {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  filter: blur(140px);
+  opacity: 0.18;
+  animation: spotlight-rotate 18s infinite linear;
+  pointer-events: none;
+}
+
+@keyframes spotlight-rotate {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Confetti */
+.confetti-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.confetti-piece {
+  position: absolute;
+  opacity: 0.75;
+  border-radius: 2px;
+}
+
+/* ---- Winner Card ---- */
+.winner-card {
+  width: 100%;
+  max-width: 360px;
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(170deg,
+    rgba(20, 20, 32, 0.97) 0%,
+    rgba(8, 8, 14, 0.99) 100%
+  );
+  border-radius: 28px;
+  padding: 30px 22px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  border: 1px solid rgba(241, 196, 15, 0.2);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.03),
+    0 40px 120px rgba(0, 0, 0, 0.85),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+/* Gold shimmer top edge */
+.winner-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 10%; right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(241,196,15,0.6), transparent);
+  border-radius: 1px;
+}
+
+/* ---- Badge ---- */
+.winner-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(241, 196, 15, 0.08);
+  padding: 6px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(241, 196, 15, 0.2);
+}
+
+.winner-badge span {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: var(--text-gold);
+  text-transform: uppercase;
+}
+
+.badge-icon {
+  color: var(--text-gold);
+  filter: drop-shadow(0 0 8px rgba(241, 196, 15, 0.6));
+}
+
+/* ---- Hero (avatar + name) ---- */
+.winner-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.winner-avatar-ring {
+  padding: 3px;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.06),
+    0 10px 40px rgba(0,0,0,0.5);
+}
+
+.winner-name {
+  font-size: 26px;
+  font-weight: 950;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+
+.winner-chance {
+  font-size: 10px;
+  font-weight: 900;
+  color: #000;
+  padding: 4px 14px;
+  border-radius: 999px;
+  letter-spacing: 0.5px;
+}
+
+/* ---- Prize Card ---- */
+.prize-card {
+  width: 100%;
+  background: rgba(241, 196, 15, 0.03);
+  border: 1px solid rgba(241, 196, 15, 0.12);
+  border-radius: 20px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+.prize-label {
+  font-size: 9px;
+  font-weight: 900;
+  color: var(--text-muted);
+  letter-spacing: 3px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.prize-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 10px;
+}
+
+.prize-currency {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--accent-primary);
+  letter-spacing: 1px;
+}
+
+.prize-value {
+  font-size: 48px;
+  font-weight: 950;
+  line-height: 1;
+  background: linear-gradient(135deg, #fff 30%, rgba(255,255,255,0.75) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 24px rgba(241,196,15,0.3));
+}
+
+.prize-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+}
+
+.prize-details {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr 1fr;
+  gap: 8px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 6px;
+  background: rgba(255,255,255,0.02);
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+.detail-label {
+  font-size: 8px;
+  font-weight: 800;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.detail-value {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+/* ---- Continue Button ---- */
+.continue-btn {
+  width: 100%;
+  height: 58px;
+  border-radius: 18px;
+  font-size: 14px;
+  font-weight: 950;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.continue-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+}
+
+.continue-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  filter: brightness(1.15);
+}
+
+.continue-btn:active {
+  transform: translateY(0) scale(0.97);
+}

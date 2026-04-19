@@ -1,0 +1,346 @@
+/* =============================================
+   HEADER — ELITE PRO REDESIGN v3
+   ============================================= */
+
+.header-pro-elite {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+  background: #06060c;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  flex-shrink: 0;
+  /* Telegram Safe Area Support */
+  padding-top: calc(env(safe-area-inset-top, 0px) + 6px);
+}
+
+/* ---- 1. Provably Fair Ribbon ---- */
+.fair-ribbon {
+  height: 26px;
+  background: rgba(241, 196, 15, 0.04);
+  border-bottom: 1px solid rgba(241, 196, 15, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.fair-ribbon:hover {
+  background: rgba(241, 196, 15, 0.08);
+}
+
+.ribbon-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ribbon-icon {
+  color: var(--accent-primary);
+  filter: drop-shadow(0 0 5px rgba(241, 196, 15, 0.4));
+}
+
+.ribbon-text {
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  color: #fff;
+  opacity: 0.9;
+}
+
+.ribbon-dot {
+  width: 3px;
+  height: 3px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
+}
+
+.ribbon-hash {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+}
+
+/* ---- 2. Main Bar ---- */
+.header-elite__main {
+  height: 72px;
+  padding: 0 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ---- 3. Profile Section ---- */
+.header-elite__profile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.elite-avatar-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.avatar-orbit-glow {
+  position: absolute;
+  inset: -6px;
+  background: radial-gradient(circle, rgba(241, 196, 15, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: orbit-breath 3s infinite alternate;
+}
+
+.avatar-orbit-ring {
+  position: absolute;
+  inset: -2px;
+  border: 1px solid rgba(241, 196, 15, 0.25);
+  border-radius: 50%;
+}
+
+.online-status-indicator {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 11px;
+  height: 11px;
+  background: #34c759;
+  border: 2px solid #06060c;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(52, 199, 89, 0.8);
+  z-index: 5;
+}
+
+@keyframes orbit-breath {
+  from { opacity: 0.4; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1.05); }
+}
+
+.profile-info-lite {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  cursor: pointer;
+}
+
+.elite-user-name {
+  font-size: 16px;
+  font-weight: 950;
+  color: #fff;
+  letter-spacing: -0.3px;
+  line-height: 1.1;
+}
+
+.online-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255,255,255,0.04);
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.pill-dot {
+  width: 4px;
+  height: 4px;
+  background: #34c759;
+  border-radius: 50%;
+}
+
+.online-pill span {
+  font-size: 8px;
+  font-weight: 900;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+/* ---- 4. Wallet Console Elite ---- */
+.wallet-console-elite {
+  display: flex;
+  align-items: center;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  padding: 4px;
+  gap: 4px;
+  box-shadow: 
+    0 10px 30px rgba(0,0,0,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.02);
+  transition: all 0.2s;
+}
+
+.wallet-console-elite:hover {
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(241,196,15,0.15);
+}
+
+.wallet-display {
+  display: flex;
+  flex-direction: column;
+  padding: 2px 10px;
+  cursor: pointer;
+}
+
+.wallet-label {
+  font-size: 7px;
+  font-weight: 900;
+  color: var(--text-muted);
+  letter-spacing: 1.5px;
+  margin-bottom: 1px;
+}
+
+.wallet-balance-row {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.w-val {
+  font-size: 16px;
+  font-weight: 950;
+  color: #fff;
+  letter-spacing: -0.5px;
+}
+
+.w-unit {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--text-gold);
+}
+
+.wallet-add-btn {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #f5cc1a 0%, #d4a017 100%);
+  border: none;
+  border-radius: 10px;
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(241,196,15,0.3);
+}
+
+.wallet-add-btn:active {
+  transform: scale(0.92);
+}
+
+/* ---- 5. Actions ---- */
+.header-elite__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-history-btn {
+  width: 40px;
+  height: 40px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.header-history-btn:hover {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+}
+
+/* Compact Lang Dropdown */
+.lang-dropdown-container {
+  position: relative;
+  z-index: 1001;
+}
+
+.lang-trigger-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 6px 12px;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.lang-trigger-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.lang-dropdown-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: transparent;
+}
+
+.lang-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 140px;
+  padding: 6px;
+  background: #11111a;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 1001;
+}
+
+.lang-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 13px;
+  font-weight: 500;
+  width: 100%;
+}
+
+.lang-menu-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+.lang-menu-item.active {
+  background: rgba(108, 92, 231, 0.15);
+  color: #a29bfe;
+}
+
+.lang-flag {
+  font-size: 16px;
+}
+
+@media (max-width: 380px) {
+  .lang-trigger-btn span {
+    display: none;
+  }
+  .lang-trigger-btn {
+    padding: 6px;
+  }
+}

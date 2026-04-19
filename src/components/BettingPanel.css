@@ -1,0 +1,254 @@
+/* =============================================
+   BETTING PANEL — Elite Console v4
+   ============================================= */
+
+.bet-panel-lite {
+  background: linear-gradient(
+    180deg,
+    rgba(14, 14, 22, 0.98) 0%,
+    rgba(6, 6, 12, 1) 100%
+  );
+  backdrop-filter: blur(32px) saturate(1.8);
+  -webkit-backdrop-filter: blur(32px) saturate(1.8);
+  border-top: 1px solid rgba(241, 196, 15, 0.15);
+  padding: 12px 16px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 
+    0 -20px 60px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255,255,255,0.04);
+  position: relative;
+  z-index: 1000;
+}
+
+/* Shimmer top line */
+.bet-panel-lite::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 15%; right: 15%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(241,196,15,0.5), transparent);
+}
+
+.bet-panel-lite__inner {
+  max-width: 430px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ---- Balance Row (simplified, no nav icons) ---- */
+.console-row-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2px;
+}
+
+.console-balance {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.console-balance:active { transform: scale(0.96); }
+
+.c-label {
+  font-size: 9px;
+  font-weight: 900;
+  color: var(--text-muted);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.c-val-group {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.c-val {
+  font-size: 20px;
+  font-weight: 950;
+  color: #fff;
+  font-family: var(--font-mono);
+  line-height: 1;
+}
+
+.c-unit {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--text-gold);
+}
+
+.c-add {
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, #f5cc1a, #d4a017);
+  border-radius: 6px;
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 900;
+  margin-left: 6px;
+  box-shadow: 0 2px 8px rgba(241,196,15,0.3);
+}
+
+.console-nav-mini {
+  display: flex;
+  gap: 10px;
+}
+
+.console-nav-mini button {
+  width: 40px;
+  height: 40px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.console-nav-mini button:active {
+  background: rgba(241,196,15,0.1);
+  color: var(--text-gold);
+  border-color: rgba(241,196,15,0.2);
+  transform: scale(0.9);
+}
+
+/* ---- Console Mid: Input Row ---- */
+.console-input-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.input-box {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: border-color 0.2s;
+  height: 44px;
+}
+
+.input-box:focus-within {
+  border-color: rgba(241,196,15,0.35);
+  box-shadow: 0 0 0 4px rgba(241,196,15,0.05);
+}
+
+.input-prefix {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--text-gold);
+}
+
+.console-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 900;
+  font-family: var(--font-mono);
+  width: 100%;
+}
+
+.console-presets {
+  display: flex;
+  gap: 6px;
+}
+
+.console-presets button {
+  height: 44px;
+  padding: 0 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px;
+  color: rgba(255,255,255,0.5);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.console-presets button:active {
+  background: rgba(255,255,255,0.08);
+  transform: scale(0.94);
+}
+
+/* ---- Console Bottom: Primary Action ---- */
+.console-action-row {
+  display: flex;
+  gap: 10px;
+}
+
+.console-submit-btn {
+  flex: 1;
+  height: 48px;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #f5cc1a 0%, #e0a800 100%);
+  color: #000;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow:
+    0 6px 24px rgba(241,196,15,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.25);
+}
+
+.btn-text {
+  position: relative;
+  z-index: 2;
+  font-size: 16px;
+  font-weight: 950;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.console-submit-btn:disabled {
+  filter: grayscale(0.8) opacity(0.5);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.console-profile-btn {
+  width: 48px;
+  height: 48px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.console-profile-btn:active {
+  transform: scale(0.9);
+  background: rgba(255,255,255,0.08);
+}
+
+.console-err {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--accent-red);
+  text-align: center;
+  margin-top: -4px;
+}
