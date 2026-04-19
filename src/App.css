@@ -1,16 +1,20 @@
 /* =============================================
-   APP SHELL — Premium Mobile Layout
+   APP SHELL — Premium Crypto Layout
    ============================================= */
 
 .app-shell {
   width: 100vw;
   height: 100dvh;
-  background-color: var(--bg-dark);
+  background-color: var(--bg-base);
   color: var(--text-primary);
   overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: stretch;
+  /* Subtle mesh gradient */
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(59,130,246,0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(240,180,41,0.04) 0%, transparent 60%);
 }
 
 .app-container {
@@ -20,7 +24,9 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  background: linear-gradient(180deg, #050509 0%, #030305 100%);
+  background: linear-gradient(180deg, #0c0d17 0%, #090a13 100%);
+  border-left: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
 }
 
 /* ---- Scrollable Main ---- */
@@ -32,6 +38,7 @@
   display: flex;
   flex-direction: column;
   -webkit-overflow-scrolling: touch;
+  position: relative;
 }
 
 .app-main::-webkit-scrollbar {
@@ -39,38 +46,86 @@
 }
 
 /* ---- Game Wheel Section ---- */
+/* ---- Atmosphere / Background Effects ---- */
+.wheel-atmosphere {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 460px;
+  height: 460px;
+  pointer-events: none;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+.atmosphere-glow {
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(240, 180, 41, 0.15) 0%, transparent 70%);
+  filter: blur(40px);
+  animation: atmosphere-pulse 6s ease-in-out infinite;
+}
+
+.atmosphere-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  animation: atmosphere-rotate 20s linear infinite;
+}
+
+.atmosphere-ring--1 { width: 380px; height: 380px; border-style: dashed; opacity: 0.4; }
+.atmosphere-ring--2 { width: 440px; height: 440px; border-width: 0.5px; opacity: 0.2; animation-duration: 35s; animation-direction: reverse; }
+
+@keyframes atmosphere-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+}
+
+@keyframes atmosphere-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .game-section {
-  padding: 10px 16px 4px;
+  padding: 0px 16px 0;
   flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+
+@media (max-height: 700px) {
+  .game-section {
+    padding: 0px 8px;
+  }
 }
 
 /* ---- Bets Feed Section ---- */
 .feed-section {
   flex: 1;
-  padding: 0 4px;
-  min-height: 120px;
+  padding: 0 8px;
+  min-height: 80px;
 }
 
 /* ---- Footer (Betting Console) ---- */
 .app-footer-elite {
   flex-shrink: 0;
-  z-index: 1000;
+  z-index: 200;
   position: relative;
-  background: #06060c;
 }
 
-/* =============================================
-   HEADER OVERRIDES
-   ============================================= */
+/* ---- Header overrides ---- */
 .header-pro-elite {
   flex-shrink: 0;
 }
 
-/* =============================================
-   EMPTY ZAP ICON
-   ============================================= */
+/* ---- Empty Zap Icon ---- */
 .empty-zap-gold {
-  color: var(--accent-primary);
-  opacity: 0.5;
-  filter: drop-shadow(0 0 8px rgba(241,196,15,0.3));
+  color: var(--accent-gold);
+  opacity: 0.35;
+  filter: drop-shadow(0 0 10px var(--accent-gold-glow));
 }
