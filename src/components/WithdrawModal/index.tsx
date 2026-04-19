@@ -7,7 +7,7 @@ interface WithdrawModalProps {
   isOpen: boolean;
   onClose: () => void;
   balance: number;
-  onWithdraw: (amount: number) => Promise<boolean>;
+  onWithdraw: (amount: number) => Promise<{ success: boolean; checkUrl?: string; error?: string }>;
 }
 
 const MIN_WITHDRAW = 1; // Lowered for CryptoBot
@@ -22,11 +22,13 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [checkUrl, setCheckUrl] = useState<string | null>(null);
 
   const resetForm = useCallback(() => {
     setAmount('');
     setError(null);
     setSuccess(false);
+    setCheckUrl(null);
   }, []);
 
   const handleClose = useCallback(() => {
@@ -55,11 +57,16 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({
     
     try {
       const result = await onWithdraw(numAmount);
-      if (result) {
+      if (result.success) {
         setSuccess(true);
-        setTimeout(() => {
-          handleClose();
-        }, 3000);
+        setCheckUrl(result.checkUrl || null);
+        if (!result.checkUrl) {
+          setTimeout(() => {
+            handleClose();
+          }, 3000);
+        }
+      } else {
+        setError(result.error || 'Ошибка при создании чека');
       }
     } catch {
       setError('Произошла ошибка. Попробуйте позже.');
@@ -100,7 +107,27 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({
             <div className="withdraw-modal__success">
               <CheckCircle size={48} color="#00b894" />
               <p>Чек успешно создан!</p>
-              <span>Заберите его в чате или перейдите по ссылке</span>
+              <span>Сумма списана с баланса. Заберите чек ниже:</span>
+              
+              {checkUrl && (
+                <div className="withdraw-success-link">
+                  <div className="success-url-box">
+                    <input type="text" readOnly value={checkUrl} className="success-url-input" />
+                    <button 
+                      type="button"
+                      className="copy-url-btn"
+                      onClick={() => {
+                        navigator.clipboard.writeText(checkUrl);
+                      }}
+                    >
+                      COPY
+                    </button>
+                  </div>
+                  <a href={checkUrl} target="_blank" rel="noopener noreferrer" className="open-url-btn">
+                    ОТКРЫТЬ ЧЕК В BOT
+                  </a>
+                </div>
+              )}
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="withdraw-modal__form">
