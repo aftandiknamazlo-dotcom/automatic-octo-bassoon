@@ -1,12 +1,14 @@
 {
+  "id": "spinx-premium-roulette",
   "short_name": "SpinX",
   "name": "SpinX Premium Roulette",
+  "description": "Premium Crypto PVP Roulette Experience",
   "icons": [
     {
       "src": "/icon-192.png",
       "type": "image/png",
       "sizes": "192x192",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     },
     {
       "src": "/icon-512.png",
@@ -15,8 +17,10 @@
       "purpose": "any"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "theme_color": "#0c0d17",
   "background_color": "#0c0d17"
 }
