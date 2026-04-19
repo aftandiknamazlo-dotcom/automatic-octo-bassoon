@@ -16,8 +16,7 @@ import WithdrawModal from './components/WithdrawModal';
 import Chat from './components/Chat';
 import AdminPanel from './components/AdminPanel';
 import Achievements from './components/Achievements';
-import AchievementPopup from './components/AchievementPopup';
-
+import { useAudio } from './hooks/useAudio';
 import './App.css';
 
 const BETTING_DURATION = 15;
