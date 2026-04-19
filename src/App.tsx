@@ -126,11 +126,8 @@ const App: React.FC = () => {
 
         <main className="app-main">
           <div className="game-section">
-            <div className="wheel-atmosphere">
-              <div className="atmosphere-glow" />
-              <div className="atmosphere-ring atmosphere-ring--1" />
-              <div className="atmosphere-ring atmosphere-ring--2" />
-            </div>
+            <div className="starry-sky" />
+            <div className="starry-center-glow" />
             <GameWheel
               players={gameState.players}
               phase={gameState.phase}
