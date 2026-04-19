@@ -66,18 +66,27 @@ const App: React.FC = () => {
   const [showWinner, setShowWinner] = useState(false);
   const [currentWinner, setCurrentWinner] = useState<Player | null>(null);
 
+  // CRITICAL: Clear winner data when a new round starts
+  useEffect(() => {
+    if (gameState?.phase === 'betting' || gameState?.phase === 'waiting') {
+      setShowWinner(false);
+      setCurrentWinner(null);
+    }
+  }, [gameState?.phase]);
+
   const handleSpinComplete = useCallback(() => {
-    if (gameState?.winner) {
+    // Only capture winner once per spin to prevent flashing
+    if (gameState?.winner && !showWinner) {
       setCurrentWinner(gameState.winner);
       setShowWinner(true);
     }
-  }, [gameState?.winner]);
+  }, [gameState?.winner, showWinner]);
 
-  // Handle auto-closing winner modal
+  // Handle auto-closing winner modal (keeping it for safety)
   useEffect(() => {
     if (showWinner) {
-      const timer = setTimeout(() => setShowWinner(false), 5000);
-      return () => clearTimeout(timer);
+      const winnerTimer = setTimeout(() => setShowWinner(false), 8000);
+      return () => clearTimeout(winnerTimer);
     }
   }, [showWinner]);
 
@@ -115,6 +124,7 @@ const App: React.FC = () => {
               roll={gameState.roll}
               bettingDuration={BETTING_DURATION}
               onSpinComplete={handleSpinComplete}
+              playTick={useAudio().playTick}
               language={language}
             />
           </div>
@@ -156,6 +166,7 @@ const App: React.FC = () => {
       <AnimatePresence>
         {showWinner && currentWinner && (
           <WinnerModal 
+            key={`${currentWinner.id}-${gameState.roll}`} // Unique key to force fresh render
             winner={currentWinner} 
             winAmount={gameState.winAmount}
             totalBank={gameState.totalBank}
@@ -191,10 +202,7 @@ const App: React.FC = () => {
             isOpen={isWithdrawOpen} 
             onClose={() => setIsWithdrawOpen(false)} 
             balance={balance} 
-            onWithdraw={async (amount) => {
-              const res = await withdraw(amount);
-              return res.success;
-            }}
+            onWithdraw={withdraw}
           />
         )}
         {isHistoryOpen && (

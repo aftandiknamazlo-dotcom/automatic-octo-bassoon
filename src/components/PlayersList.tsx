@@ -47,8 +47,12 @@ const PlayerSlip = React.memo(({ p, isMe, t }: { p: Player; isMe: boolean; t: Re
 
 const PlayersList: React.FC<PlayersListProps> = ({ players, totalBank, language }) => {
   const t = translations[language];
-  // Simple check for "you" (could be improved with real userId)
   const isUser = (id: string) => id === 'user';
+
+  // Sort players by percentage descending (highest chance first)
+  const sortedPlayers = React.useMemo(() => {
+    return [...players].sort((a, b) => b.percentage - a.percentage);
+  }, [players]);
 
   return (
     <div className="players-list-pro">
@@ -67,8 +71,8 @@ const PlayersList: React.FC<PlayersListProps> = ({ players, totalBank, language 
 
       <div className="players-grid-pro">
         <AnimatePresence mode="popLayout">
-          {players.length > 0 ? (
-            players.map((p) => (
+          {sortedPlayers.length > 0 ? (
+            sortedPlayers.map((p) => (
               <PlayerSlip key={p.id} p={p} isMe={isUser(p.id)} t={t} />
             ))
           ) : (

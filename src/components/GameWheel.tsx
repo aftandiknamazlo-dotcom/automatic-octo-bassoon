@@ -11,6 +11,7 @@ interface GameWheelProps {
   roll: number;
   bettingDuration?: number;
   onSpinComplete: () => void;
+  playTick: () => void;
   language: Language;
 }
 
@@ -19,6 +20,7 @@ const COLORS = ['#e91e8c','#ff6b35','#4caf50','#2196f3','#9c27b0','#00bcd4','#ff
 
 const GameWheel: React.FC<GameWheelProps> = (props) => {
   const canvasRef  = useRef<HTMLCanvasElement>(null);
+  const { playTick } = props; // Pass tick directly or use hook
 
   // Exact mirrors of demo globals
   const spinAngle  = useRef(0);            // demo: let spinAngle=0
@@ -30,9 +32,12 @@ const GameWheel: React.FC<GameWheelProps> = (props) => {
   const playersRef = useRef<Player[]>(props.players);
   const rollRef    = useRef(props.roll);
   const onDoneRef  = useRef(props.onSpinComplete);
+  const onTickRef  = useRef(props.playTick);
+  
   playersRef.current = props.players;
   rollRef.current    = props.roll;
   onDoneRef.current  = props.onSpinComplete;
+  onTickRef.current  = props.playTick;
 
   /* ─────────────────────────────────────────────────────────────────────────
      drawWheel — IDENTICAL to demo's drawWheel(), canvas 320×320
@@ -143,20 +148,31 @@ const GameWheel: React.FC<GameWheelProps> = (props) => {
     spinAngle.current = 0;
 
     // demo: const totalRotation=Math.PI*2*6+targetAngle-spinAngle; (spinAngle=0)
-    const totalRotation = Math.PI * 2 * 6 + targetAngle;
+    const totalRotation = Math.PI * 2 * 10 + targetAngle; // 10 rotations for 12s
 
-    // demo: let start=null; const dur=4500;
     let start: number | null = null;
-    const dur = 4500;
+    const dur = 12000; // 12 seconds
+    let lastTickAngle = 0;
 
-    // demo: function frame(ts){ ... spinAngle=totalRotation*ease(t); ... }
     function frame(ts: number) {
       if (!start) start = ts;
       const t = Math.min((ts - start) / dur, 1);
-      spinAngle.current = totalRotation * ease(t); // demo: spinAngle=totalRotation*ease(t)
+      
+      const prevAngle = spinAngle.current;
+      spinAngle.current = totalRotation * ease(t); 
+      
+      // TICK SOUND LOGIC: Trigger when crossing sector boundaries
+      // Average sector size is roughly (2*PI / numPlayers)
+      const currentAngle = spinAngle.current;
+      const angleDiff = currentAngle - lastTickAngle;
+      if (angleDiff > 0.15) { // Threshold for a 'tick'
+        onTickRef.current();
+        lastTickAngle = currentAngle;
+      }
+
       drawWheel();
       if (t < 1) {
-        spinRAF.current = requestAnimationFrame(frame); // demo: spinRAF=requestAnimationFrame(frame)
+        spinRAF.current = requestAnimationFrame(frame);
       } else {
         spinning.current = false;
         onDoneRef.current();
