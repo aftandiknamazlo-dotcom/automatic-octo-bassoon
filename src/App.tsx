@@ -36,6 +36,7 @@ const App: React.FC = () => {
     history,
     withdraw,
   } = useSocketGame();
+  const { playTick } = useAudio();
   
   const user = {
     id: userProfile?.id || 'user',
@@ -124,7 +125,7 @@ const App: React.FC = () => {
               roll={gameState.roll}
               bettingDuration={BETTING_DURATION}
               onSpinComplete={handleSpinComplete}
-              playTick={useAudio().playTick}
+              playTick={playTick}
               language={language}
             />
           </div>

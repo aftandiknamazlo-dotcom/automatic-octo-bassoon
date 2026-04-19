@@ -20,7 +20,6 @@ const COLORS = ['#e91e8c','#ff6b35','#4caf50','#2196f3','#9c27b0','#00bcd4','#ff
 
 const GameWheel: React.FC<GameWheelProps> = (props) => {
   const canvasRef  = useRef<HTMLCanvasElement>(null);
-  const { playTick } = props; // Pass tick directly or use hook
 
   // Exact mirrors of demo globals
   const spinAngle  = useRef(0);            // demo: let spinAngle=0
@@ -158,11 +157,9 @@ const GameWheel: React.FC<GameWheelProps> = (props) => {
       if (!start) start = ts;
       const t = Math.min((ts - start) / dur, 1);
       
-      const prevAngle = spinAngle.current;
       spinAngle.current = totalRotation * ease(t); 
       
-      // TICK SOUND LOGIC: Trigger when crossing sector boundaries
-      // Average sector size is roughly (2*PI / numPlayers)
+      // TICK SOUND LOGIC
       const currentAngle = spinAngle.current;
       const angleDiff = currentAngle - lastTickAngle;
       if (angleDiff > 0.15) { // Threshold for a 'tick'
