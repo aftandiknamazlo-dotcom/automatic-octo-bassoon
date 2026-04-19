@@ -55,10 +55,17 @@ const App: React.FC = () => {
   const [isFairOpen, setIsFairOpen] = useState(false);
   const [isAchievementsOpen, setIsAchievementsOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(() => {
+    return localStorage.getItem('spinx_chat_open') === 'true';
+  });
+  
   const [language, setLanguage] = useState<Language>(
     (localStorage.getItem('spinx_lang') as Language) || 'ru'
   );
+
+  useEffect(() => {
+    localStorage.setItem('spinx_chat_open', isChatOpen.toString());
+  }, [isChatOpen]);
 
   useEffect(() => {
     localStorage.setItem('spinx_lang', language);
@@ -111,6 +118,7 @@ const App: React.FC = () => {
           onOpenHistory={() => setIsHistoryOpen(true)}
           onOpenHash={() => setIsFairOpen(true)}
           onOpenProfile={() => setIsProfileOpen(true)}
+          onToggleChat={() => setIsChatOpen(prev => !prev)}
           serverSeedHash={gameState.hash || ""}
           language={language}
           onLanguageChange={setLanguage}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ShieldCheck, History, Globe } from 'lucide-react';
+import { ShieldCheck, History, Globe, MessageSquare } from 'lucide-react';
 import UserAvatar from './UserAvatar';
 import { translations } from '../i18n/translations';
 import type { Language } from '../i18n/translations';
@@ -13,6 +13,7 @@ interface HeaderProps {
   onOpenHash: () => void;
   onOpenHistory: () => void;
   onOpenProfile: () => void;
+  onToggleChat: () => void;
   serverSeedHash: string;
   language: Language;
   onLanguageChange: (lang: Language) => void;
@@ -25,6 +26,7 @@ const Header: React.FC<HeaderProps> = ({
   onOpenHash,
   onOpenHistory,
   onOpenProfile,
+  onToggleChat,
   serverSeedHash,
   language,
   onLanguageChange
@@ -70,6 +72,15 @@ const Header: React.FC<HeaderProps> = ({
         </div>
 
         <div className="header-elite__actions">
+          <motion.button 
+            className="header-history-btn"
+            whileTap={{ scale: 0.9 }}
+            onClick={onToggleChat}
+            title={t.chat}
+          >
+            <MessageSquare size={18} />
+          </motion.button>
+
           <motion.button 
             className="header-history-btn"
             whileTap={{ scale: 0.9 }}
@@ -120,4 +131,12 @@ const Header: React.FC<HeaderProps> = ({
   );
 };
 
-export default Header;
+export default React.memo(Header, (prev, next) => {
+  return (
+    prev.onlineCount === next.onlineCount &&
+    prev.userName === next.userName &&
+    prev.userAvatar === next.userAvatar &&
+    prev.serverSeedHash === next.serverSeedHash &&
+    prev.language === next.language
+  );
+});

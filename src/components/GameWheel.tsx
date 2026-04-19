@@ -162,7 +162,7 @@ const GameWheel: React.FC<GameWheelProps> = (props) => {
       // TICK SOUND LOGIC
       const currentAngle = spinAngle.current;
       const angleDiff = currentAngle - lastTickAngle;
-      if (angleDiff > 0.15) { // Threshold for a 'tick'
+      if (angleDiff > 0.4) { // Increased threshold to avoid annoying frequent ticks
         onTickRef.current();
         lastTickAngle = currentAngle;
       }

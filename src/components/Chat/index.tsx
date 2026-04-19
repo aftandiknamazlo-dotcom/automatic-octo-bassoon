@@ -79,20 +79,6 @@ export const Chat: React.FC<ChatProps> = ({
 
   return (
     <>
-      {/* Chat Toggle Button */}
-      <motion.button
-        className="chat-toggle"
-        onClick={onToggle}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        data-testid="chat-toggle"
-      >
-        <MessageCircle size={22} />
-        {onlineCount > 0 && (
-          <span className="chat-toggle__badge">{onlineCount}</span>
-        )}
-      </motion.button>
-
       {/* Chat Panel */}
       <AnimatePresence>
         {isOpen && (
