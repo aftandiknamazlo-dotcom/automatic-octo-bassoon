@@ -1,5 +1,5 @@
 /* =============================================
-   GAME WHEEL — Canvas-based v11 (Demo Port)
+   GAME WHEEL — Canvas-based v11 (Expanded Rim)
    ============================================= */
 
 .wheel-v5 {
@@ -9,61 +9,48 @@
   flex-direction: column;
   align-items: center;
   position: relative;
+  padding: 5px 0;
 }
 
-/* Outer container — rim image as background */
+/* Outer container — Expanded to cover the shadow area */
 .wheel-outer-container {
   position: relative;
   width: 100%;
-  max-width: 300px;
+  max-width: 320px; /* Increased size to cover shadow area */
   aspect-ratio: 1;
+  /* Rim image */
   background: url('/wheel-rim-clean.png') center / contain no-repeat;
-}
-
-/* Phase glow ring */
-.wheel-outer-container::before {
-  content: '';
-  position: absolute;
-  inset: -8%;
+  margin-bottom: 5px;
+  background-color: transparent;
   border-radius: 50%;
-  background: transparent;
-  transition: box-shadow 0.6s ease;
-  pointer-events: none;
-  z-index: 0;
 }
 
-.wheel-phase-betting .wheel-outer-container::before {
-  box-shadow: 0 0 40px rgba(59,130,246,0.18), 0 0 80px rgba(59,130,246,0.08);
+@media (max-width: 480px) {
+  .wheel-outer-container {
+    max-width: 280px; /* Larger mobile size */
+  }
 }
 
-.wheel-phase-spinning .wheel-outer-container::before {
-  box-shadow: 0 0 50px rgba(240,180,41,0.25), 0 0 100px rgba(240,180,41,0.1);
-  animation: spin-ring-pulse 1s ease-in-out infinite alternate;
+/* Phase glow ring — DISABLED */
+.wheel-outer-container::before {
+  display: none;
 }
 
-.wheel-phase-waiting .wheel-outer-container::before {
-  box-shadow: none;
-}
-
-@keyframes spin-ring-pulse {
-  from { opacity: 0.7; }
-  to   { opacity: 1; }
-}
-
-/* Canvas wrap — safe inner area of the rim */
+/* Canvas wrap — Scaled up to match the larger rim */
 .wheel-svg-wrap {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 80%;   /* inner safe area proportional to rim PNG */
-  height: 80%;
+  width: 82.5%; 
+  height: 82.5%;
   border-radius: 50%;
   overflow: hidden;
   z-index: 1;
+  box-shadow: inset 0 0 15px rgba(0,0,0,0.4);
 }
 
-/* Canvas stretches to fill the wrap — exact 320x320 internally */
+/* Canvas stretches to fill the wrap */
 .wheel-canvas {
   width: 100%;
   height: 100%;
@@ -71,35 +58,34 @@
   border-radius: 50%;
 }
 
-/* Pointer — exact from demo: white downward triangle */
+/* Pointer — Scaled and aligned */
 .wheel-pointer {
   position: absolute;
-  top: calc(10% - 11px);
+  top: -6px;
   left: 50%;
   transform: translateX(-50%);
   width: 0;
   height: 0;
-  border-left: 12px solid transparent;
-  border-right: 12px solid transparent;
-  border-top: 22px solid #fff;
-  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+  border-left: 11px solid transparent;
+  border-right: 11px solid transparent;
+  border-top: 20px solid #fff;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
   z-index: 20;
 }
 
-/* Center hub */
+/* Center hub — Slightly larger to match overall wheel scale */
 .wheel-hub {
   position: absolute;
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  width: 37%;
-  height: 37%;
+  width: 42%;
+  height: 42%;
   border-radius: 50%;
-  background: radial-gradient(circle at 40% 40%, #171929, #0c0d16);
-  border: 2px solid rgba(255,255,255,0.07);
+  background: radial-gradient(circle at 40% 40%, #1a1c2e, #0c0d16);
+  border: 1px solid rgba(255,255,255,0.08);
   box-shadow:
-    0 0 0 4px rgba(0,0,0,0.6),
-    0 0 0 6px rgba(255,255,255,0.025),
-    inset 0 0 30px rgba(0,0,0,0.9);
+    0 0 0 4px rgba(0,0,0,0.7),
+    inset 0 0 25px rgba(0,0,0,0.9);
   display: flex;
   align-items: center;
   justify-content: center;
