@@ -1,5 +1,4 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useRef } from 'react';
 import type { Player } from '../types';
 import { useAudio } from '../hooks/useAudio';
 import { translations } from '../i18n/translations';
@@ -11,166 +10,243 @@ interface GameWheelProps {
   phase: string;
   timer: number;
   roll: number;
-  bettingDuration: number;
+  bettingDuration?: number;
   onSpinComplete: () => void;
   language: Language;
 }
 
-const SVG_SIZE = 400;
-const CENTER = 200;
-const R = 190;
+// ─── EXACT colors from demo file ───────────────────────────────────────────
+const COLORS = ['#e91e8c','#ff6b35','#4caf50','#2196f3','#9c27b0','#00bcd4','#ffc107','#f44336'];
 
-const GameWheel: React.FC<GameWheelProps> = ({
-  players,
-  phase,
-  timer,
-  roll,
-  onSpinComplete,
-  language
-}) => {
+// ─── These are GLOBAL-style module-level refs (mirrors demo's global vars) ──
+// We use a component-instance pattern via useRef to avoid global pollution
+
+const GameWheel: React.FC<GameWheelProps> = (props) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const { playTick } = useAudio();
-  const t = translations[language];
-  const totalBets = players.reduce((sum, p) => sum + p.bet, 0);
 
-  // Sound logic tracking
-  const lastIndexRef = React.useRef<number>(-1);
+  // ── Mirrors demo's global vars ──────────────────────────────────────────
+  const state = useRef({
+    players:     props.players,
+    phase:       props.phase,
+    timer:       props.timer,
+    roll:        props.roll,
+    spinAngle:   0,          // demo: let spinAngle = 0
+    spinning:    false,      // demo: let spinning = false
+    spinRAF:     null as number | null,
+    lastTick:    -1,
+    onSpinComplete: props.onSpinComplete,
+    language:    props.language,
+  });
 
-  const getAngles = (index: number) => {
-    let startAngle = 0;
-    if (totalBets === 0) return { startAngle: 0, endAngle: 360 };
-    for (let i = 0; i < index; i++) {
-      startAngle += (players[i].bet / totalBets) * 360;
+  // Keep state ref in sync with props
+  state.current.players   = props.players;
+  state.current.phase     = props.phase;
+  state.current.timer     = props.timer;
+  state.current.roll      = props.roll;
+  state.current.onSpinComplete = props.onSpinComplete;
+  state.current.language  = props.language;
+
+  // ── EXACT drawWheel from demo ───────────────────────────────────────────
+  function drawWheel() {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const s = state.current;
+    ctx.clearRect(0, 0, 320, 320);
+
+    // demo: const cx=160,cy=160,r=158,inner=60;
+    const cx = 160, cy = 160, r = 158, inner = 60;
+
+    if (s.players.length === 0) {
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fillStyle = '#1a1f2e'; ctx.fill();
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.strokeStyle = '#2d3748'; ctx.lineWidth = 2; ctx.stroke();
+      return;
     }
-    const sweepAngle = (players[index].bet / totalBets) * 360;
-    return { startAngle, endAngle: startAngle + sweepAngle };
-  };
 
-  const polarToCartesian = (cx: number, cy: number, r: number, deg: number) => {
-    const rad = (deg - 90) * Math.PI / 180;
-    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
-  };
+    // demo: const total = players.reduce((s,p)=>s+p.bet,0);
+    const total = s.players.reduce((sum, p) => sum + p.bet, 0);
 
-  const describeSlice = (startAngle: number, endAngle: number): string => {
-    const sweep = endAngle - startAngle;
-    if (sweep >= 359.9) {
-      const p1 = polarToCartesian(CENTER, CENTER, R, 0);
-      const p2 = polarToCartesian(CENTER, CENTER, R, 180);
-      return `M ${p1.x} ${p1.y} A ${R} ${R} 0 1 1 ${p2.x} ${p2.y} A ${R} ${R} 0 1 1 ${p1.x} ${p1.y} Z`;
+    // demo: let startAngle = spinAngle;
+    let startAngle = s.spinAngle;
+
+    s.players.forEach((p, i) => {
+      // demo: const slice=(p.bet/total)*Math.PI*2;
+      const slice = (p.bet / total) * Math.PI * 2;
+      const end = startAngle + slice;
+
+      // demo: ctx.beginPath();ctx.moveTo(cx,cy);
+      ctx.beginPath(); ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, r, startAngle, end); ctx.closePath();
+      ctx.fillStyle = COLORS[i % COLORS.length]; ctx.fill();
+      ctx.strokeStyle = '#0d1117'; ctx.lineWidth = 2; ctx.stroke();
+
+      // demo: const mid=startAngle+slice/2;
+      const mid = startAngle + slice / 2;
+      // demo: const ar=r*0.72;
+      const ar = r * 0.72;
+      const ax = cx + Math.cos(mid) * ar;
+      const ay = cy + Math.sin(mid) * ar;
+
+      // Avatar initials circle
+      ctx.save();
+      ctx.beginPath(); ctx.arc(ax, ay, 16, 0, Math.PI * 2); ctx.clip();
+      ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fill();
+      ctx.restore();
+      ctx.save();
+      ctx.beginPath(); ctx.arc(ax, ay, 16, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 10px -apple-system,sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText((p.name || '?').slice(0, 2).toUpperCase(), ax, ay);
+      ctx.restore();
+
+      startAngle = end;
+    });
+
+    // Inner hub (dark circle) — demo: ctx.beginPath();ctx.arc(cx,cy,inner+4...
+    ctx.beginPath(); ctx.arc(cx, cy, inner + 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#0d1117'; ctx.fill();
+  }
+
+  // ── EXACT ease function from demo ───────────────────────────────────────
+  function ease(t: number) {
+    // demo: function ease(t){return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;}
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+
+  // ── EXACT startSpin from demo (adapted to use server roll) ──────────────
+  function startSpin() {
+    const s = state.current;
+    if (s.spinRAF) cancelAnimationFrame(s.spinRAF);
+    s.lastTick = -1;
+
+    const total = s.players.reduce((sum, p) => sum + p.bet, 0);
+    if (total === 0) return;
+
+    // demo: const rand=Math.random()*total; — we use server roll instead
+    const rand = s.roll * total;
+
+    // demo: let acc=0; let winnerIdx=0; for(...)
+    let acc = 0;
+    let winnerIdx = 0;
+    for (let i = 0; i < s.players.length; i++) {
+      acc += s.players[i].bet;
+      if (rand < acc) { winnerIdx = i; break; }
     }
-    const s = polarToCartesian(CENTER, CENTER, R, startAngle);
-    const e = polarToCartesian(CENTER, CENTER, R, endAngle);
-    const large = sweep > 180 ? 1 : 0;
-    return `M ${CENTER} ${CENTER} L ${s.x} ${s.y} A ${R} ${R} 0 ${large} 1 ${e.x} ${e.y} Z`;
-  };
 
-  const getSliceCenter = (index: number) => {
-    const { startAngle, endAngle } = getAngles(index);
-    const mid = startAngle + (endAngle - startAngle) / 2;
-    return polarToCartesian(CENTER, CENTER, R * 0.62, mid);
-  };
+    // demo: let sliceStart=0; for(let i=0;i<winnerIdx;i++) ...
+    let sliceStart = 0;
+    for (let i = 0; i < winnerIdx; i++) sliceStart += s.players[i].bet / total;
+    const sliceMid   = sliceStart + s.players[winnerIdx].bet / total / 2;
 
-  const hasBets = totalBets > 0;
+    // demo: const targetAngle=(-Math.PI/2)-sliceMid*Math.PI*2;
+    const targetAngle = (-Math.PI / 2) - sliceMid * Math.PI * 2;
 
+    // demo: const totalRotation=Math.PI*2*6+targetAngle-spinAngle;
+    const totalRotation = Math.PI * 2 * 6 + targetAngle - s.spinAngle;
+    const startAngle    = s.spinAngle;
+
+    // demo: let start=null; const dur=4500;
+    let start: number | null = null;
+    const dur = 4500;
+
+    // demo: function frame(ts){...}
+    function frame(ts: number) {
+      if (!start) start = ts;
+      // demo: const t=Math.min((ts-start)/dur,1);
+      const t = Math.min((ts - start) / dur, 1);
+      // demo: spinAngle=totalRotation*ease(t);
+      s.spinAngle = startAngle + totalRotation * ease(t);
+      drawWheel();
+
+      if (t < 1) {
+        s.spinRAF = requestAnimationFrame(frame);
+      } else {
+        // demo: showWinner(winnerIdx,total);
+        s.spinning = false;
+        s.onSpinComplete();
+      }
+    }
+
+    // demo: spinRAF=requestAnimationFrame(frame);
+    s.spinRAF = requestAnimationFrame(frame);
+  }
+
+  // ── Trigger spin on phase change ────────────────────────────────────────
+  useEffect(() => {
+    const s = state.current;
+
+    if (props.phase === 'spinning' && !s.spinning) {
+      s.spinning = true;
+      startSpin();
+    } else if (props.phase !== 'spinning') {
+      // Not spinning — reset and redraw
+      if (props.phase === 'waiting' || props.phase === 'betting') {
+        // If coming back from spin, reset angle
+        if (s.spinning) { s.spinning = false; s.spinAngle = 0; }
+      }
+      drawWheel();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.phase, props.roll]);
+
+  // ── Redraw when players change (bet added) ──────────────────────────────
+  useEffect(() => {
+    if (props.phase !== 'spinning') {
+      drawWheel();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.players]);
+
+  // ── Initial draw on mount ───────────────────────────────────────────────
+  useEffect(() => {
+    drawWheel();
+    return () => {
+      if (state.current.spinRAF) cancelAnimationFrame(state.current.spinRAF);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Timer formatting
   const formatTime = (s: number) => {
     const v = Math.ceil(s);
     return `00:${v < 10 ? '0' : ''}${v}`;
   };
 
+  const t = translations[props.language];
+
   return (
-    <div className={`wheel-v5 wheel-phase-${phase}`}>
-      {/* Outer container: rim image is a CSS background */}
+    <div className={`wheel-v5 wheel-phase-${props.phase}`}>
       <div className="wheel-outer-container">
 
-        {/* Triangle ticker */}
-        <div className="wheel-ticker">▼</div>
+        {/* Pointer — exact style from demo: border-top white triangle */}
+        <div className="wheel-pointer" />
 
-        {/* SVG wheel — slightly smaller than container so rim edges show */}
         <div className="wheel-svg-wrap">
-          <svg viewBox={`0 0 ${SVG_SIZE} ${SVG_SIZE}`} className="wheel-svg">
-            {/* Background circle covers rim's inner mechanical parts */}
-            <circle cx={CENTER} cy={CENTER} r={R + 5} fill="#0d0d14" />
+          {/* Canvas — exact 320x320 from demo */}
+          <canvas
+            ref={canvasRef}
+            width={320}
+            height={320}
+            className="wheel-canvas"
+          />
 
-            <motion.g
-              animate={{ rotate: phase === 'spinning' ? (3600 + (1 - roll) * 360) : 0 }}
-              transition={{
-                duration: phase === 'spinning' ? 8 : 0,
-                ease: [0.12, 0, 0.39, 0], // Custom cubic-bezier for realistic slowing
-              }}
-              onAnimationComplete={() => {
-                if (phase === 'spinning') {
-                  onSpinComplete();
-                }
-              }}
-              onUpdate={(latest: { rotate?: number }) => {
-                if (phase === 'spinning' && latest.rotate !== undefined) {
-                  const currentRotation = (latest.rotate % 360 + 360) % 360;
-                  const targetAngle = (360 - currentRotation) % 360;
-
-                  let accumulated = 0;
-                  let currentIndex = -1;
-                  for (let i = 0; i < players.length; i++) {
-                    const sweep = (players[i].bet / totalBets) * 360;
-                    if (targetAngle >= accumulated && targetAngle < accumulated + sweep) {
-                      currentIndex = i;
-                      break;
-                    }
-                    accumulated += sweep;
-                  }
-
-                  if (currentIndex !== lastIndexRef.current && currentIndex !== -1) {
-                    playTick();
-                    lastIndexRef.current = currentIndex;
-                  }
-                }
-              }}
-              style={{ originX: `${CENTER}px`, originY: `${CENTER}px` }}
-            >
-              {hasBets
-                ? players.map((player, index) => {
-                    const { startAngle, endAngle } = getAngles(index);
-                    const segSize = endAngle - startAngle;
-                    const pos = getSliceCenter(index);
-                    const showAvatar = segSize > 15;
-
-                    return (
-                      <g key={player.id}>
-                        <motion.path
-                          d={describeSlice(startAngle, endAngle)}
-                          fill={player.color}
-                          stroke="rgba(0,0,0,0.25)"
-                          strokeWidth="1"
-                          initial={false}
-                          animate={{ d: describeSlice(startAngle, endAngle) }}
-                          transition={{ type: 'spring', stiffness: 80, damping: 18 }}
-                        />
-                        {showAvatar && (
-                          <motion.foreignObject
-                            animate={{ x: pos.x - 18, y: pos.y - 18 }}
-                            transition={{ type: 'spring', stiffness: 80, damping: 18 }}
-                            width="36"
-                            height="36"
-                          >
-                            <div className="wheel-segment-avatar">
-                              <img src={player.avatar || '/avatars/default.png'} alt="" />
-                            </div>
-                          </motion.foreignObject>
-                        )}
-                      </g>
-                    );
-                  })
-                : <circle cx={CENTER} cy={CENTER} r={R} fill="rgba(108,92,231,0.4)" />
-              }
-            </motion.g>
-          </svg>
-
-          {/* Center hub */}
+          {/* Center label — mirrors demo's center-circle */}
           <div className="wheel-hub">
-            {phase === 'spinning' ? (
+            {props.phase === 'spinning' ? (
               <span className="hub-spin">{t.spinning}</span>
-            ) : phase === 'waiting' ? (
-              <span className="hub-waiting">{language === 'ru' ? 'ИЩЕМ ИГРОКОВ' : 'FINDING PLAYERS'}</span>
+            ) : props.phase === 'waiting' ? (
+              <span className="hub-waiting">
+                {props.language === 'ru' ? 'ИЩЕМ ИГРОКОВ' : 'FINDING PLAYERS'}
+              </span>
             ) : (
-              <span className="hub-timer">{formatTime(timer)}</span>
+              <span className="hub-timer">{formatTime(props.timer)}</span>
             )}
           </div>
         </div>
@@ -180,19 +256,4 @@ const GameWheel: React.FC<GameWheelProps> = ({
   );
 };
 
-export default React.memo(GameWheel, (prev, next) => {
-  if (prev.phase !== next.phase) return false;
-  if (prev.timer !== next.timer) return false;
-  if (prev.roll !== next.roll) return false;
-  if (prev.language !== next.language) return false;
-  
-  // Fast comparison for players array
-  if (prev.players.length !== next.players.length) return false;
-  for (let i = 0; i < prev.players.length; i++) {
-    if (prev.players[i].id !== next.players[i].id || prev.players[i].bet !== next.players[i].bet) {
-      return false;
-    }
-  }
-
-  return true;
-});
+export default GameWheel;
