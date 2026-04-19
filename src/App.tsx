@@ -16,6 +16,7 @@ import WithdrawModal from './components/WithdrawModal';
 import Chat from './components/Chat';
 import AdminPanel from './components/AdminPanel';
 import Achievements from './components/Achievements';
+import AchievementPopup from './components/AchievementPopup';
 import { useAudio } from './hooks/useAudio';
 import './App.css';
 
@@ -202,7 +203,11 @@ const App: React.FC = () => {
             isOpen={isWithdrawOpen} 
             onClose={() => setIsWithdrawOpen(false)} 
             balance={balance} 
-            onWithdraw={withdraw}
+            onWithdraw={async (amt) => {
+              const res = await withdraw(amt);
+              // Ensure it returns the correct shape for the modal
+              return res as { success: boolean; checkUrl?: string; error?: string };
+            }}
           />
         )}
         {isHistoryOpen && (
