@@ -59,24 +59,39 @@
   overflow: hidden;
 }
 
-.starry-sky::after {
+.starry-sky::after, .starry-sky::before {
   content: '';
   position: absolute;
   width: 200%;
   height: 200%;
   top: -50%;
   left: -50%;
-  /* Multiple layers of stars using radial gradients */
+  background-size: 400px 400px;
+  will-change: opacity, transform;
+}
+
+.starry-sky::after {
   background-image: 
     radial-gradient(1px 1px at 20px 30px, #fff, rgba(0,0,0,0)),
     radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), rgba(0,0,0,0)),
     radial-gradient(1px 1px at 90px 40px, #fff, rgba(0,0,0,0)),
     radial-gradient(1.5px 1.5px at 160px 120px, rgba(255,255,255,0.7), rgba(0,0,0,0)),
     radial-gradient(1px 1px at 200px 50px, #fff, rgba(0,0,0,0)),
-    radial-gradient(2px 2px at 280px 180px, rgba(255,255,255,0.6), rgba(0,0,0,0));
-  background-size: 300px 300px;
-  opacity: 0.3;
-  animation: stars-twinkle 4s ease-in-out infinite alternate;
+    radial-gradient(2px 2px at 280px 180px, rgba(255,255,255,0.6), rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 320px 40px, #fff, rgba(0,0,0,0)),
+    radial-gradient(1.5px 1.5px at 380px 220px, #fff, rgba(0,0,0,0));
+  opacity: 0.35;
+  animation: stars-twinkle 5s ease-in-out infinite alternate;
+}
+
+.starry-sky::before {
+  background-image: 
+    radial-gradient(1px 1px at 50px 100px, #fff, rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 150px 250px, #fff, rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 250px 50px, #fff, rgba(0,0,0,0));
+  background-size: 250px 250px;
+  opacity: 0.15;
+  animation: stars-twinkle 8s ease-in-out infinite alternate-reverse;
 }
 
 /* Subtle glow at the center to settle the wheel */
