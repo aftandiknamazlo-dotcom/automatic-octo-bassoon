@@ -1,18 +1,16 @@
 {
-  "name": "SpinX - Crypto Roulette",
   "short_name": "SpinX",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#06060c",
-  "theme_color": "#06060c",
-  "description": "Premium PVP Crypto Roulette in Telegram",
-  "orientation": "portrait",
+  "name": "SpinX Premium Roulette",
   "icons": [
     {
-      "src": "pwa-icon.png",
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
       "sizes": "512x512",
-      "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#0c0d17",
+  "background_color": "#0c0d17"
 }

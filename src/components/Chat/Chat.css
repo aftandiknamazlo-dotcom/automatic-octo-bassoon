@@ -71,6 +71,8 @@
   z-index: 1500;
   border-top: 1px solid rgba(108,92,231,0.2);
   box-shadow: 0 -20px 60px rgba(0,0,0,0.7);
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 /* ---- Header ---- */
