@@ -215,4 +215,12 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
   );
 };
 
-export default ProfileModal;
+export default React.memo(ProfileModal, (prev, next) => {
+  return (
+    prev.isOpen === next.isOpen &&
+    prev.language === next.language &&
+    prev.user.balance === next.user.balance &&
+    prev.user.referralEarnings === next.user.referralEarnings &&
+    prev.user.referredCount === next.user.referredCount
+  );
+});
