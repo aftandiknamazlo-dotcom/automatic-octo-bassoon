@@ -36,6 +36,12 @@ export function useSocketGame() {
   const [isConnected, setIsConnected] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
+  const gameStateRef = useRef<GameState | null>(null);
+
+  // Sync ref with state
+  useEffect(() => {
+    gameStateRef.current = gameState;
+  }, [gameState]);
   const [timer, setTimer] = useState<number>(0);
   const [balance, setBalance] = useState<number>(0);
   const [history, setHistory] = useState<GameRound[]>([]);
@@ -150,6 +156,30 @@ export function useSocketGame() {
       winAmount: number;
       commission: number;
     }) => {
+      // Сначала получаем текущее состояние для истории
+      const currentGameId = gameStateRef.current?.gameId || 0;
+      const currentPlayers = gameStateRef.current?.players || [];
+      const currentTotalBank = gameStateRef.current?.totalBank || 0;
+      const currentHash = gameStateRef.current?.hash || '';
+      const currentClientSeed = gameStateRef.current?.clientSeed || '';
+
+      // Добавляем в историю
+      const round: GameRound = {
+        gameId: currentGameId,
+        players: currentPlayers,
+        totalBank: currentTotalBank,
+        winner: result.winner,
+        winAmount: result.winAmount,
+        commission: result.commission,
+        roll: result.roll,
+        hash: currentHash,
+        serverSeed: result.salt,
+        clientSeed: currentClientSeed,
+        timestamp: Date.now()
+      };
+      setHistory(h => [round, ...h].slice(0, 20));
+
+      // Затем обновляем gameState
       setGameState(prev => prev ? {
         ...prev,
         phase: 'result',
@@ -159,25 +189,6 @@ export function useSocketGame() {
         serverSeed: result.salt,
         roll: result.roll
       } : prev);
-
-      // Add to history
-      setGameState(currentState => {
-        const round: GameRound = {
-          gameId: currentState?.gameId || 0,
-          players: currentState?.players || [],
-          totalBank: currentState?.totalBank || 0,
-          winner: result.winner,
-          winAmount: result.winAmount,
-          commission: result.commission,
-          roll: result.roll,
-          hash: currentState?.hash || '',
-          serverSeed: result.salt,
-          clientSeed: currentState?.clientSeed || '',
-          timestamp: Date.now()
-        };
-        setHistory(h => [round, ...h].slice(0, 20));
-        return currentState;
-      });
     });
 
     socket.on('balance_update', (newBalance: number) => {

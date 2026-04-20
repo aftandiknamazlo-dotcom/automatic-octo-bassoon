@@ -90,10 +90,10 @@ const App: React.FC = () => {
     }
   }, [gameState?.winner, showWinner]);
 
-  // Handle auto-closing winner modal (keeping it for safety)
+  // Handle auto-closing winner modal after 5 seconds
   useEffect(() => {
     if (showWinner) {
-      const winnerTimer = setTimeout(() => setShowWinner(false), 8000);
+      const winnerTimer = setTimeout(() => setShowWinner(false), 5000);
       return () => clearTimeout(winnerTimer);
     }
   }, [showWinner]);
