@@ -6,10 +6,10 @@ import './GameWheel.css';
 
 interface GameWheelProps {
   players: Player[];
-  rolling: boolean;
-  roll: number;
-  timer: number;
   phase: string;
+  timer: number;
+  roll: number;
+  bettingDuration: number;
   onSpinComplete: () => void;
   playTick?: () => void;
   language: Language;
@@ -127,14 +127,15 @@ function drawInitials(
 
 const GameWheel: React.FC<GameWheelProps> = ({
   players,
-  rolling,
-  roll,
-  timer,
   phase,
+  timer,
+  roll,
+  bettingDuration,
   onSpinComplete,
   playTick,
   language,
 }) => {
+  const rolling = phase === 'spinning';
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | null>(null);
   const rotationRef = useRef(0);
