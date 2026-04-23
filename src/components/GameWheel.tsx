@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import type { Player } from '../types';
 import { translations } from '../i18n/translations';
 import type { Language } from '../i18n/translations';
@@ -6,227 +6,524 @@ import './GameWheel.css';
 
 interface GameWheelProps {
   players: Player[];
-  phase: string;
-  timer: number;
+  rolling: boolean;
   roll: number;
-  bettingDuration?: number;
+  timer: number;
+  phase: string;
   onSpinComplete: () => void;
-  playTick: () => void;
+  playTick?: () => void;
   language: Language;
 }
 
-// EXACT colors from demo
-const COLORS = ['#e91e8c','#ff6b35','#4caf50','#2196f3','#9c27b0','#00bcd4','#ffc107','#f44336'];
+/* ── Color palette with gradient pairs (Premium Neon) ── */
+const SEGMENT_COLORS: [string, string][] = [
+  ['#FF3B8E', '#D61B6D'], // Pink Neon
+  ['#0099FF', '#0066CC'], // Electric Blue
+  ['#FFD700', '#FF8C00'], // Golden Glow
+  ['#00FFD1', '#00A88A'], // Mint Crystal
+  ['#FF5E3A', '#D13415'], // Sunset Orange
+  ['#AD00FF', '#7A00B3'], // Cyber Purple
+  ['#8FFF00', '#6BB300'], // Radioactive Green
+  ['#00E5FF', '#0097A7'], // Cyan Blast
+  ['#FF0000', '#B30000'], // Blood Red
+  ['#FF00FF', '#B300B3'], // Magenta Edge
+];
 
-const GameWheel: React.FC<GameWheelProps> = (props) => {
-  const canvasRef  = useRef<HTMLCanvasElement>(null);
+/* ── Avatar image cache ── */
+const avatarCache = new Map<string, HTMLImageElement>();
 
-  // Exact mirrors of demo globals
-  const spinAngle  = useRef(0);            // demo: let spinAngle=0
-  const spinRAF    = useRef<number|null>(null); // demo: let spinRAF=null
-  const spinning   = useRef(false);        // demo: let spinning=false
-  const imgCache   = useRef<Record<string,HTMLImageElement>>({});
+function loadImage(src: string): Promise<HTMLImageElement> {
+  if (avatarCache.has(src)) {
+    return Promise.resolve(avatarCache.get(src)!);
+  }
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      avatarCache.set(src, img);
+      resolve(img);
+    };
+    img.onerror = () => {
+      // Return a blank image on error — fallback will draw initials
+      resolve(img);
+    };
+    img.src = src;
+  });
+}
 
-  // Live refs — updated every render, no stale closures
-  const playersRef = useRef<Player[]>(props.players);
-  const rollRef    = useRef(props.roll);
-  const onDoneRef  = useRef(props.onSpinComplete);
-  const onTickRef  = useRef(props.playTick);
-  
-  playersRef.current = props.players;
-  rollRef.current    = props.roll;
-  onDoneRef.current  = props.onSpinComplete;
-  onTickRef.current  = props.playTick;
+/* ── Smooth animated values hook ── */
+function useAnimatedValues(targetValues: number[], duration: number = 500) {
+  const [animatedValues, setAnimatedValues] = useState<number[]>(targetValues);
+  const animationRef = useRef<number | null>(null);
+  const startValuesRef = useRef<number[]>(targetValues);
+  const startTimeRef = useRef<number>(0);
+  const prevTargetRef = useRef<string>('');
 
-  /* ─────────────────────────────────────────────────────────────────────────
-     drawWheel — IDENTICAL to demo's drawWheel(), canvas 320×320
-     ───────────────────────────────────────────────────────────────────────── */
-  function drawWheel() {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+  useEffect(() => {
+    const key = targetValues.join(',');
+    if (key === prevTargetRef.current) return;
+    prevTargetRef.current = key;
 
-    ctx.clearRect(0, 0, 320, 320);
-    const cx = 160, cy = 160, r = 158, inner = 60; // exact from demo
+    if (animationRef.current) cancelAnimationFrame(animationRef.current);
 
-    const pts = playersRef.current;
-    if (pts.length === 0) {
-      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.fillStyle = '#1a1f2e'; ctx.fill();
-      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.strokeStyle = '#2d3748'; ctx.lineWidth = 2; ctx.stroke();
+    startValuesRef.current = [...animatedValues];
+    startTimeRef.current = performance.now();
+
+    const animate = (timestamp: number) => {
+      const elapsed = timestamp - startTimeRef.current;
+      const progress = Math.min(elapsed / duration, 1);
+      // Quintic ease-out for ultra-smooth deceleration
+      const eased = 1 - Math.pow(1 - progress, 5);
+
+      const newValues = targetValues.map((target, index) => {
+        const start = startValuesRef.current[index] ?? 0;
+        return start + (target - start) * eased;
+      });
+
+      setAnimatedValues(newValues);
+
+      if (progress < 1) {
+        animationRef.current = requestAnimationFrame(animate);
+      } else {
+        animationRef.current = null;
+      }
+    };
+
+    animationRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [targetValues, duration]);
+
+  return animatedValues;
+}
+
+/* ── Helper: draw initials text ── */
+function drawInitials(
+  ctx: CanvasRenderingContext2D,
+  name: string,
+  cx: number,
+  cy: number,
+  radius: number
+) {
+  const parts = name.trim().split(/\s+/);
+  const initials =
+    parts.length >= 2
+      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+      : name.slice(0, 2).toUpperCase();
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(255,255,255,0.95)';
+  ctx.font = `bold ${Math.max(10, radius * 0.65)}px "Inter", "SF Pro", sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.shadowColor = 'rgba(0,0,0,0.5)';
+  ctx.shadowBlur = 3;
+  ctx.fillText(initials, cx, cy);
+  ctx.restore();
+}
+
+const GameWheel: React.FC<GameWheelProps> = ({
+  players,
+  rolling,
+  roll,
+  timer,
+  phase,
+  onSpinComplete,
+  playTick,
+  language,
+}) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animationRef = useRef<number | null>(null);
+  const rotationRef = useRef(0);
+  const lastTickSegRef = useRef(-1);
+  const avatarImagesRef = useRef<Map<string, HTMLImageElement>>(new Map());
+  const t = translations[language];
+
+  // Use higher-res canvas for retina
+  const CANVAS_SIZE = 640;
+
+  const sortedPlayers = useMemo(
+    () =>
+      [...players].sort((left, right) =>
+        String(left.id).localeCompare(String(right.id), undefined, { numeric: true })
+      ),
+    [players]
+  );
+
+  /* ── Preload avatars ── */
+  useEffect(() => {
+    const loadAll = async () => {
+      const newMap = new Map<string, HTMLImageElement>();
+      for (const player of sortedPlayers) {
+        if (player.avatar) {
+          try {
+            const img = await loadImage(player.avatar);
+            if (img.naturalWidth > 0) {
+              newMap.set(player.id, img);
+            }
+          } catch {
+            // skip
+          }
+        }
+      }
+      avatarImagesRef.current = newMap;
+      // Trigger a redraw after images load
+      drawWheel(rotationRef.current, animatedSegmentAngles);
+    };
+    loadAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sortedPlayers]);
+
+  // Segment angles
+  const segmentAngles = useMemo(() => {
+    if (sortedPlayers.length === 0) return [];
+    const total = sortedPlayers.reduce((sum, p) => sum + p.bet, 0);
+    if (total === 0) return new Array(sortedPlayers.length).fill(0);
+    return sortedPlayers.map((p) => (p.bet / total) * Math.PI * 2);
+  }, [sortedPlayers]);
+
+  const animatedSegmentAngles = useAnimatedValues(segmentAngles, 600);
+
+  /* ── Main draw function ── */
+  const drawWheel = useCallback(
+    (rotation: number, animAngles?: number[]) => {
+      const canvas = canvasRef.current;
+      const ctx = canvas?.getContext('2d');
+      if (!canvas || !ctx) return;
+
+      const s = CANVAS_SIZE;
+      const center = s / 2;
+      const radius = s / 2 - 10;
+
+      ctx.clearRect(0, 0, s, s);
+
+      /* ── Empty state ── */
+      if (sortedPlayers.length === 0) {
+        // Draw dark circle with subtle pattern
+        ctx.beginPath();
+        ctx.arc(center, center, radius, 0, Math.PI * 2);
+        const emptyGrad = ctx.createRadialGradient(center, center, 0, center, center, radius);
+        emptyGrad.addColorStop(0, '#1e2235');
+        emptyGrad.addColorStop(1, '#0f1119');
+        ctx.fillStyle = emptyGrad;
+        ctx.fill();
+
+        // Inner ring
+        ctx.beginPath();
+        ctx.arc(center, center, radius - 4, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        return;
+      }
+
+      const total = sortedPlayers.reduce((sum, p) => sum + p.bet, 0);
+      let startAngle = rotation - Math.PI / 2;
+
+      /* ── Draw segments ── */
+      sortedPlayers.forEach((player, index) => {
+        const angle =
+          animAngles && animAngles[index] !== undefined
+            ? animAngles[index]
+            : (player.bet / total) * Math.PI * 2;
+
+        if (angle <= 0) return;
+
+        const endAngle = startAngle + angle;
+        const [colorStart, colorEnd] = SEGMENT_COLORS[index % SEGMENT_COLORS.length];
+
+        // Create gradient along the segment
+        const midAngle = startAngle + angle / 2;
+        const gx1 = center + Math.cos(startAngle) * radius * 0.5;
+        const gy1 = center + Math.sin(startAngle) * radius * 0.5;
+        const gx2 = center + Math.cos(endAngle) * radius * 0.5;
+        const gy2 = center + Math.sin(endAngle) * radius * 0.5;
+
+        const gradient = ctx.createLinearGradient(gx1, gy1, gx2, gy2);
+        gradient.addColorStop(0, colorStart);
+        gradient.addColorStop(1, colorEnd);
+
+        // Draw segment
+        ctx.beginPath();
+        ctx.moveTo(center, center);
+        ctx.arc(center, center, radius, startAngle, endAngle);
+        ctx.closePath();
+        ctx.fillStyle = gradient;
+        ctx.fill();
+
+        // Subtle inner shadow on segment
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(center, center);
+        ctx.arc(center, center, radius, startAngle, endAngle);
+        ctx.closePath();
+        ctx.clip();
+
+        // Inner glow edge
+        const innerGrad = ctx.createRadialGradient(center, center, radius * 0.7, center, center, radius);
+        innerGrad.addColorStop(0, 'transparent');
+        innerGrad.addColorStop(1, 'rgba(0,0,0,0.25)');
+        ctx.fillStyle = innerGrad;
+        ctx.fill();
+        ctx.restore();
+
+        // Separator line between segments
+        if (sortedPlayers.length > 1) {
+          ctx.beginPath();
+          ctx.moveTo(center, center);
+          ctx.lineTo(center + Math.cos(startAngle) * radius, center + Math.sin(startAngle) * radius);
+          ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+
+        /* ── Draw avatar inside segment ── */
+        const percentage = player.bet / total;
+        // Avatar size proportional to percentage: min 18px, max 56px (in canvas coords)
+        const minAvatarR = 22;
+        const maxAvatarR = 60;
+        const avatarR = Math.max(minAvatarR, Math.min(maxAvatarR, percentage * 180));
+
+        // Position avatar in the middle of the segment arc
+        const avatarDist = radius * 0.55;
+        const avatarX = center + Math.cos(midAngle) * avatarDist;
+        const avatarY = center + Math.sin(midAngle) * avatarDist;
+
+        const avatarImg = avatarImagesRef.current.get(player.id);
+
+        ctx.save();
+        // Clip to circle for avatar
+        ctx.beginPath();
+        ctx.arc(avatarX, avatarY, avatarR, 0, Math.PI * 2);
+        ctx.closePath();
+
+        // Avatar border glow
+        ctx.shadowColor = 'rgba(0,0,0,0.6)';
+        ctx.shadowBlur = 8;
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        ctx.clip();
+
+        if (avatarImg && avatarImg.naturalWidth > 0) {
+          ctx.drawImage(
+            avatarImg,
+            avatarX - avatarR,
+            avatarY - avatarR,
+            avatarR * 2,
+            avatarR * 2
+          );
+        } else {
+          // Draw gradient circle with initials
+          const fallbackGrad = ctx.createLinearGradient(
+            avatarX - avatarR,
+            avatarY - avatarR,
+            avatarX + avatarR,
+            avatarY + avatarR
+          );
+          fallbackGrad.addColorStop(0, colorStart);
+          fallbackGrad.addColorStop(1, colorEnd);
+          ctx.fillStyle = fallbackGrad;
+          ctx.fillRect(avatarX - avatarR, avatarY - avatarR, avatarR * 2, avatarR * 2);
+          drawInitials(ctx, player.name, avatarX, avatarY, avatarR);
+        }
+
+        ctx.restore();
+
+        // Avatar border ring
+        ctx.beginPath();
+        ctx.arc(avatarX, avatarY, avatarR + 1.5, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        /* ── Percentage text below avatar ── */
+        if (angle > 0.25) {
+          // Only show text if segment is big enough
+          const textDist = radius * 0.82;
+          const textX = center + Math.cos(midAngle) * textDist;
+          const textY = center + Math.sin(midAngle) * textDist;
+
+          ctx.save();
+          ctx.fillStyle = 'rgba(255,255,255,0.95)';
+          ctx.font = `bold ${Math.max(12, avatarR * 0.45)}px "Inter", sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.shadowColor = 'rgba(0,0,0,0.7)';
+          ctx.shadowBlur = 4;
+          ctx.fillText(`${(percentage * 100).toFixed(1)}%`, textX, textY);
+          ctx.restore();
+        }
+
+        startAngle = endAngle;
+      });
+
+      /* ── Center hub ── */
+      const hubR = radius * 0.18;
+
+      // Hub shadow
+      ctx.beginPath();
+      ctx.arc(center, center, hubR + 6, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.fill();
+
+      // Hub gradient
+      ctx.beginPath();
+      ctx.arc(center, center, hubR, 0, Math.PI * 2);
+      const hubGrad = ctx.createRadialGradient(
+        center - hubR * 0.3,
+        center - hubR * 0.3,
+        0,
+        center,
+        center,
+        hubR
+      );
+      hubGrad.addColorStop(0, '#2a2d3e');
+      hubGrad.addColorStop(1, '#0c0d16');
+      ctx.fillStyle = hubGrad;
+      ctx.fill();
+
+      // Hub ring
+      ctx.beginPath();
+      ctx.arc(center, center, hubR, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    },
+    [sortedPlayers, CANVAS_SIZE]
+  );
+
+  /* ── Redraw on segment change ── */
+  useEffect(() => {
+    drawWheel(rotationRef.current, animatedSegmentAngles);
+  }, [drawWheel, animatedSegmentAngles]);
+
+  /* ── Spin animation ── */
+  useEffect(() => {
+    if (!rolling) {
+      if (phase === 'waiting') {
+        rotationRef.current = 0;
+        lastTickSegRef.current = -1;
+      }
+      drawWheel(rotationRef.current, animatedSegmentAngles);
       return;
     }
 
-    const total = pts.reduce((s, p) => s + p.bet, 0);
-    let startAngle = spinAngle.current;  // demo: let startAngle=spinAngle
+    const total = sortedPlayers.reduce((sum, p) => sum + p.bet, 0);
+    if (total === 0) return;
 
-    pts.forEach((p, i) => {
-      const slice = (p.bet / total) * Math.PI * 2; // demo: const slice=...
-      const end   = startAngle + slice;
-
-      ctx.beginPath(); ctx.moveTo(cx, cy);
-      ctx.arc(cx, cy, r, startAngle, end); ctx.closePath();
-      ctx.fillStyle = COLORS[i % COLORS.length]; ctx.fill();
-      ctx.strokeStyle = '#0d1117'; ctx.lineWidth = 2; ctx.stroke();
-
-      // avatar — demo uses SVG data-URL, we use preloaded Img
-      const mid = startAngle + slice / 2;       // demo: const mid=...
-      const ar  = r * 0.72;                     // demo: const ar=r*0.72
-      const ax  = cx + Math.cos(mid) * ar;
-      const ay  = cy + Math.sin(mid) * ar;
-
-      let img = imgCache.current[p.avatar || ''];
-      if (!img && p.avatar) {
-        img = new window.Image();
-        img.src = p.avatar;
-        img.onload = drawWheel;
-        imgCache.current[p.avatar] = img;
+    // Find winner index from roll
+    let cumulative = 0;
+    let winnerIndex = sortedPlayers.length - 1;
+    const weightedRoll = roll * total;
+    for (let i = 0; i < sortedPlayers.length; i++) {
+      cumulative += sortedPlayers[i].bet;
+      if (weightedRoll <= cumulative) {
+        winnerIndex = i;
+        break;
       }
-
-      ctx.save();
-      ctx.beginPath(); ctx.arc(ax, ay, 16, 0, Math.PI * 2); ctx.clip();
-      if (img && img.complete && img.naturalWidth > 0) {
-        ctx.drawImage(img, ax - 16, ay - 16, 32, 32);
-      } else {
-        ctx.fillStyle = COLORS[i % COLORS.length]; ctx.fill();
-      }
-      ctx.restore();
-
-      ctx.beginPath(); ctx.arc(ax, ay, 16, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 2; ctx.stroke();
-
-      startAngle = end;
-    });
-
-    // inner dark hub  — demo: ctx.beginPath();ctx.arc(cx,cy,inner+4,...
-    ctx.beginPath(); ctx.arc(cx, cy, inner + 4, 0, Math.PI * 2);
-    ctx.fillStyle = '#0d1117'; ctx.fill();
-  }
-
-  /* ─────────────────────────────────────────────────────────────────────────
-     ease — IDENTICAL to demo
-     demo: function ease(t){return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;}
-     ───────────────────────────────────────────────────────────────────────── */
-  function ease(t: number) {
-    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-  }
-
-  /* ─────────────────────────────────────────────────────────────────────────
-     startSpin — IDENTICAL to demo's startSpin(), just server roll → rand
-     ───────────────────────────────────────────────────────────────────────── */
-  function startSpin() {
-    if (spinRAF.current) cancelAnimationFrame(spinRAF.current);
-
-    const pts   = playersRef.current;
-    const total = pts.reduce((s, p) => s + p.bet, 0);
-    if (!total || pts.length === 0) return;
-
-    // demo uses Math.random()*total; we use server roll * total
-    const rand = rollRef.current * total;
-
-    // demo: let acc=0; let winnerIdx=0; for(...)
-    let acc = 0, winnerIdx = 0;
-    for (let i = 0; i < pts.length; i++) {
-      acc += pts[i].bet;
-      if (rand < acc) { winnerIdx = i; break; }
     }
 
-    // demo: let sliceStart=0; for(let i=0;i<winnerIdx;i++)...
+    // Calculate target angle
     let sliceStart = 0;
-    for (let i = 0; i < winnerIdx; i++) sliceStart += pts[i].bet / total;
+    for (let i = 0; i < winnerIndex; i++) {
+      sliceStart += sortedPlayers[i].bet / total;
+    }
+    const sliceMid = sliceStart + sortedPlayers[winnerIndex].bet / total / 2;
+    const fullRotations = Math.PI * 2 * 12; // 12 full rotations for drama
+    const targetRotation = fullRotations + Math.PI * 2 * (1 - sliceMid);
+    const startRotation = rotationRef.current;
+    const startedAt = performance.now();
+    const spinDuration = 8000; // 8 seconds
 
-    // demo: const sliceMid=sliceStart+players[winnerIdx].bet/total/2;
-    const sliceMid = sliceStart + pts[winnerIdx].bet / total / 2;
+    const animate = (timestamp: number) => {
+      const elapsed = timestamp - startedAt;
+      const progress = Math.min(elapsed / spinDuration, 1);
 
-    // demo: const targetAngle=(-Math.PI/2)-sliceMid*Math.PI*2;
-    const targetAngle = (-Math.PI / 2) - sliceMid * Math.PI * 2;
-
-    // demo resets spinAngle to 0 in resetGame() before each new spin
-    spinAngle.current = 0;
-
-    // demo: const totalRotation=Math.PI*2*6+targetAngle-spinAngle; (spinAngle=0)
-    const totalRotation = Math.PI * 2 * 10 + targetAngle; // 10 rotations for 12s
-
-    let start: number | null = null;
-    const dur = 12000; // 12 seconds
-    let lastTickAngle = 0;
-
-    function frame(ts: number) {
-      if (!start) start = ts;
-      const t = Math.min((ts - start) / dur, 1);
-      
-      spinAngle.current = totalRotation * ease(t); 
-      
-      // TICK SOUND LOGIC
-      const currentAngle = spinAngle.current;
-      const angleDiff = currentAngle - lastTickAngle;
-      if (angleDiff > 0.4) { // Increased threshold to avoid annoying frequent ticks
-        onTickRef.current();
-        lastTickAngle = currentAngle;
-      }
-
-      drawWheel();
-      if (t < 1) {
-        spinRAF.current = requestAnimationFrame(frame);
+      // Custom easing: fast start, dramatic slowdown
+      let eased: number;
+      if (progress < 0.7) {
+        // Fast phase
+        const p = progress / 0.7;
+        eased = 0.85 * (1 - Math.pow(1 - p, 3));
       } else {
-        spinning.current = false;
-        onDoneRef.current();
+        // Slow dramatic phase
+        const p = (progress - 0.7) / 0.3;
+        eased = 0.85 + 0.15 * (1 - Math.pow(1 - p, 5));
       }
+
+      rotationRef.current = startRotation + (targetRotation - startRotation) * eased;
+      drawWheel(rotationRef.current, animatedSegmentAngles);
+
+      // Tick sound when crossing REAL segment boundaries
+      if (playTick && sortedPlayers.length > 1) {
+        const total = sortedPlayers.reduce((sum, p) => sum + p.bet, 0);
+        const currentAngle = (rotationRef.current + Math.PI / 2) % (Math.PI * 2);
+        
+        let cumulativeAngle = 0;
+        let currentSegIndex = 0;
+        for (let i = 0; i < sortedPlayers.length; i++) {
+          const angle = (sortedPlayers[i].bet / total) * Math.PI * 2;
+          cumulativeAngle += angle;
+          if (currentAngle < cumulativeAngle) {
+            currentSegIndex = i;
+            break;
+          }
+        }
+
+        if (currentSegIndex !== lastTickSegRef.current) {
+          lastTickSegRef.current = currentSegIndex;
+          playTick();
+        }
+      }
+
+      if (progress < 1) {
+        animationRef.current = requestAnimationFrame(animate);
+      } else {
+        animationRef.current = null;
+        onSpinComplete();
+      }
+    };
+
+    animationRef.current = requestAnimationFrame(animate);
+    return () => {
+      if (animationRef.current !== null) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [rolling, sortedPlayers, roll, phase, onSpinComplete, drawWheel, playTick, animatedSegmentAngles]);
+
+  // Clean up avatar refs when phase resets to waiting
+  useEffect(() => {
+    if (phase === 'waiting') {
+      avatarImagesRef.current.clear();
     }
-
-    // demo: spinRAF=requestAnimationFrame(frame);
-    spinRAF.current = requestAnimationFrame(frame);
-  }
-
-  /* ── React bridge: trigger spin / redraw on prop changes ─────────────────── */
-  useEffect(() => {
-    if (props.phase === 'spinning' && !spinning.current) {
-      spinning.current = true;
-      startSpin();
-    } else if (props.phase !== 'spinning') {
-      if (props.phase === 'waiting') spinAngle.current = 0; // reset like demo
-      if (!spinning.current) drawWheel();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.phase, props.roll]);
-
-  useEffect(() => {
-    if (!spinning.current) drawWheel();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.players]);
-
-  useEffect(() => {
-    drawWheel();
-    return () => { if (spinRAF.current) cancelAnimationFrame(spinRAF.current); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  /* ── JSX ─────────────────────────────────────────────────────────────────── */
-  const t = translations[props.language];
-  const formatTime = (s: number) => {
-    const v = Math.ceil(s);
-    return `00:${v < 10 ? '0' : ''}${v}`;
-  };
+  }, [phase]);
 
   return (
-    <div className={`wheel-v5 wheel-phase-${props.phase}`}>
+    <div className={`wheel-v5 wheel-phase-${phase}`}>
       <div className="wheel-outer-container">
-        {/* white triangle pointer — exact from demo */}
         <div className="wheel-pointer" />
-        <div className="wheel-svg-wrap">
-          {/* 320×320 canvas — exact from demo */}
-          <canvas ref={canvasRef} width={320} height={320} className="wheel-canvas" />
+        <div className={`wheel-svg-wrap${sortedPlayers.length > 0 ? ' has-bets' : ''}${rolling ? ' is-spinning' : ''}`}>
+          <canvas
+            ref={canvasRef}
+            width={CANVAS_SIZE}
+            height={CANVAS_SIZE}
+            className="wheel-canvas"
+          />
           <div className="wheel-hub">
-            {props.phase === 'spinning' ? (
+            {rolling ? (
               <span className="hub-spin">{t.spinning}</span>
-            ) : props.phase === 'waiting' ? (
+            ) : phase === 'waiting' ? (
               <span className="hub-waiting">
-                {props.language === 'ru' ? 'ИЩЕМ ИГРОКОВ' : 'FINDING PLAYERS'}
+                {language === 'ru' ? 'ОЖИДАНИЕ' : 'WAITING'}
               </span>
             ) : (
-              <span className="hub-timer">{formatTime(props.timer)}</span>
+              <span className="hub-timer">{`00:${String(Math.max(0, Math.ceil(timer))).padStart(2, '0')}`}</span>
             )}
           </div>
         </div>
