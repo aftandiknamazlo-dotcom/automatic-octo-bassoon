@@ -130,7 +130,7 @@ const GameWheel: React.FC<GameWheelProps> = ({
   phase,
   timer,
   roll,
-  bettingDuration,
+  _bettingDuration,
   onSpinComplete,
   playTick,
   language,
